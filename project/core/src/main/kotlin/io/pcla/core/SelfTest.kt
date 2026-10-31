@@ -414,7 +414,7 @@ fun main(args: Array<String>) {
     check("最快的是它", UrlHealth.summary(mixed).contains("清单"))
     check("全挂的总结", UrlHealth.summary(listOf(Probe("x", "u", 0, 0, "timeout"))).contains("全部"))
 
-    // Memory check: 便秘 is a high plateau that never drops, 拉稀 is violent churn; the fixes are opposite
+    // Heap shape: a high plateau that never drops means a leak; violent swings mean churn; fixes differ
     val const = MemoryPulse.classify(listOf(1800, 1805, 1802, 1804), 2048)
     check("高位不动判便秘", const.verdict == Verdict.便秘)
     check("便秘说居高不下", const.detail.contains("居高不下"))

@@ -1,22 +1,25 @@
 package io.pcla.core.net
 
-/** The three verdicts of a memory checkup. The user coined the names; medically loose but instantly clear. */
+/** Heap shape verdicts. The constant names are user-facing shorthand (see MemoryPulse). */
 enum class Verdict { 正常, 便秘, 拉稀 }
 
 data class Pulse(val verdict: Verdict, val detail: String)
 
 /**
- * Memory checkup: tell "constipation" from "diarrhea".
+ * Heap shape analysis: distinguish a slow leak from allocation churn.
  *
- * - **便秘** (constipation): usage stays pinned high and will not come down after GC — the classic shape of a leak;
- * - **拉稀** (diarrhea): usage swings wildly within a very short time — not a leak but allocate/reclaim too often,
- *   showing up as GC jitter and sawtooth frame times. The two need opposite responses, so they must be judged apart.
+ * - leak (enum constant 便秘): usage stays pinned near the ceiling and does not come back down
+ *   after GC — the classic shape of a leak;
+ * - churn (enum constant 拉稀): usage swings by tens of MB within a very short time — not a leak,
+ *   but allocation and reclamation happening too often, which shows up as GC jitter and
+ *   sawtooth frame times.
  *
- * Input is the latest few sample points (MB, evenly spaced) and the heap cap.
+ * The two need opposite fixes (resize the heap vs. reduce allocation), so they are classified
+ * separately. Input: the latest few evenly spaced samples (MB) and the heap cap.
  */
 object MemoryPulse {
 
-    /** Jitter threshold for "diarrhea": 3% of the heap cap, and never below 16MB. */
+    /** Churn threshold: 3% of the heap cap, never below 16MB. */
     private fun churnThreshold(maxMb: Int): Int = maxOf(16, maxMb * 3 / 100)
 
     fun classify(samplesMb: List<Int>, maxMb: Int): Pulse {

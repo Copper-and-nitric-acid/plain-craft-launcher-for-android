@@ -6,13 +6,13 @@ import io.pcla.core.net.Pulse
 /**
  * Sampling side of the memory health check.
  *
- * Reading used/max off `Runtime` is enough to tell "constipation" (memory never reclaimed) from
- * "diarrhea" (constant churn): the difference is a **shape over time**, not an absolute value at
- * one instant, so several points must be collected before looking.
+ * Reading used/max off `Runtime` is enough to tell a leak (memory never reclaimed) from
+ * allocation churn (constant allocate/free): the difference is a **shape over time**, not an
+ * absolute value at one instant, so several points must be collected before classifying.
  *
  * When memory moves fast (typically right after entering a world with bulk chunk loading), the
- * once-a-second sampling here shows heavy jitter — and that jitter is exactly what "prevent
- * memory diarrhea" watches: jitter alone is fine, jitter GC can't keep up with is not.
+ * once-a-second sampling here shows heavy jitter — and that jitter is exactly what the churn
+ * check watches: jitter alone is harmless, jitter the GC cannot keep up with is not.
  */
 object MemorySampler {
 
@@ -34,10 +34,11 @@ object MemorySampler {
     }
 
     /**
-     * Prevent memory constipation: give the GC a chance.
+     * Reset the sample window at launch.
      *
-     * No System.gc() here (that is a disaster in a game process), just a sample reset so the last
-     * session's high-water mark doesn't pollute this session's judgement.
+     * `System.gc()` is deliberately not called (it would be a disaster in a game process); this
+     * only clears the samples so the previous session's high-water mark does not skew the
+     * classification of this one.
      */
     fun markLaunchStart() = reset()
 }
