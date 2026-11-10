@@ -26,3 +26,5 @@ project/            可构建的 Android 工程（Gradle）
 根目录旧档位表。要用时 `git mv` 回原位。
 
 装进 APK 的只有 `project/app/src/main/assets/` 与 `jniLibs/` 里挑出来的子集。
+
+[![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
